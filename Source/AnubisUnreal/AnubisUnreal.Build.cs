@@ -15,6 +15,8 @@ public class AnubisUnreal : ModuleRules
 			"Engine", 
 			"InputCore", 
 			"EnhancedInput",
+			//GAS dependencies
+			"GameplayAbilities",
 			"GameplayTags",       
 			"GameplayTasks"       
 		});

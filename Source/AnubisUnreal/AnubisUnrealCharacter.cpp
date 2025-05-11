@@ -50,6 +50,14 @@ AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Create Ability System Component
+	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	
+	//Create PlayerAttribute Set
+	PlayerAttributeSet = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("PlayerAttributeSet"));
+	
+	
+	
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -92,6 +100,15 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	}
 }
 
+
+inline void AAnubisUnrealCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	GiveDefaultAbilities();
+	InitDefaultAttributes();
+}
+
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -127,3 +144,40 @@ void AAnubisUnrealCharacter::Look(const FInputActionValue& Value)
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
+
+void AAnubisUnrealCharacter::GiveDefaultAbilities()
+{
+	//Critical assertion - crash immediately of the ASC is nullptr
+	check(AbilitySystemComponent);
+
+	//ASC give all abilities set in array of default abilities (set in blueprint editor)
+	for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
+	{
+		const FGameplayAbilitySpec AbilitySpec(AbilityClass,1);
+		AbilitySystemComponent->GiveAbility(AbilitySpec);
+	}
+}
+
+void AAnubisUnrealCharacter::InitDefaultAttributes()
+{
+	//check if components are valid
+	// DefaultAttributeEffect should be set via blueprint or constructor
+	if (!AbilitySystemComponent || !DefaultAttributeEffect) return;
+
+	//Make context that stores metadata about how/why is effect applied (source actor, hit result, etc.)
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+
+	//adding this actor as source of the effect
+	EffectContext.AddSourceObject(this);
+
+	//Create instance of DefaultAttributeEffect
+	const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1.f, EffectContext);
+
+	//If the instance (SpecHandle) is valid - set the default attributes (apply default effect)
+	if (SpecHandle.IsValid())
+	{
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
+
+
