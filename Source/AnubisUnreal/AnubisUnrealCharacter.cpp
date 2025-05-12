@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Macros.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -93,6 +94,12 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Look);
+
+		// Attacking
+		//** Light Attack
+		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::LightAttack);
+		//** Kick
+		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Kick);
 	}
 	else
 	{
@@ -143,6 +150,37 @@ void AAnubisUnrealCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void AAnubisUnrealCharacter::LightAttack()
+{
+	//UE_LOG(LogGameplayTags, Log, TEXT("Light Attack Function Called"));
+	//PRINT_SCREEN("Light Attack");
+	if (!AbilitySystemComponent) return;
+
+	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
+	
+	//** CAN BE ACTIVATED BY THIS IF WE DONT WANT TO USE TAGS
+	// for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
+	// {
+	// 	FString AbilityName = AbilityClass->GetName();
+	// 	PRINT_SCREEN("%s", *AbilityName);
+	// 	if (AbilityName.Contains("GA_LIGHTATTACK"))
+	// 	{
+	// 		AbilitySystemComponent->TryActivateAbilityByClass(AbilityClass);
+	// 		break;
+	// 	}
+	// }
+
+}
+
+void AAnubisUnrealCharacter::Kick()
+{
+	if (!AbilitySystemComponent) return;
+	
+	FGameplayTag KickTag = FGameplayTag::RequestGameplayTag("Abilities.Kick");
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(KickTag));
 }
 
 void AAnubisUnrealCharacter::GiveDefaultAbilities()
