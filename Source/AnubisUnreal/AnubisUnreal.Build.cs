@@ -6,6 +6,7 @@ public class AnubisUnreal : ModuleRules
 {
 	public AnubisUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
+		PrivateDependencyModuleNames.AddRange(new string[] { "RigLogicLib" });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
@@ -18,7 +19,9 @@ public class AnubisUnreal : ModuleRules
 			//GAS dependencies
 			"GameplayAbilities",
 			"GameplayTags",       
-			"GameplayTasks"       
+			"GameplayTasks",
+			//AI
+			"AIModule"
 		});
 	}
 }

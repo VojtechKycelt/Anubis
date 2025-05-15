@@ -1,7 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "AnubisUnrealGameMode.h"
-#include "AnubisUnrealCharacter.h"
+#include "Characters/AnubisUnrealCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AAnubisUnrealGameMode::AAnubisUnrealGameMode()

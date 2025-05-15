@@ -10,7 +10,9 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "Macros.h"
+#include "AnubisUnreal/Macros.h"
+#include "AnubisUnreal/Abilities/PlayerAttributeSet.h"
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -21,7 +23,7 @@ AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -48,17 +50,17 @@ AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	// Create Ability System Component
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-	
+
 	//Create PlayerAttribute Set
 	PlayerAttributeSet = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("PlayerAttributeSet"));
-	
-	
-	
+
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -73,7 +75,8 @@ void AAnubisUnrealCharacter::NotifyControllerChanged()
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
@@ -83,8 +86,8 @@ void AAnubisUnrealCharacter::NotifyControllerChanged()
 void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -97,13 +100,17 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 		// Attacking
 		//** Light Attack
-		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::LightAttack);
+		EnhancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Triggered, this,
+		                                   &AAnubisUnrealCharacter::LightAttack);
 		//** Kick
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Kick);
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogTemplateCharacter, Error,
+		       TEXT(
+			       "'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."
+		       ), *GetNameSafe(this));
 	}
 }
 
@@ -118,6 +125,11 @@ inline void AAnubisUnrealCharacter::BeginPlay()
 
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
+	//Do not move if Kicking
+	FGameplayTag IsKickingTag = FGameplayTag::RequestGameplayTag("State.IsKicking");
+	if (AbilitySystemComponent && AbilitySystemComponent->HasMatchingGameplayTag(IsKickingTag)) return;
+
+
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
@@ -129,7 +141,7 @@ void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
@@ -160,7 +172,7 @@ void AAnubisUnrealCharacter::LightAttack()
 
 	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
 	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
-	
+
 	//** CAN BE ACTIVATED BY THIS IF WE DONT WANT TO USE TAGS
 	// for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
 	// {
@@ -172,13 +184,12 @@ void AAnubisUnrealCharacter::LightAttack()
 	// 		break;
 	// 	}
 	// }
-
 }
 
 void AAnubisUnrealCharacter::Kick()
 {
-	if (!AbilitySystemComponent) return;
-	
+	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling()) return;
+
 	FGameplayTag KickTag = FGameplayTag::RequestGameplayTag("Abilities.Kick");
 	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(KickTag));
 }
@@ -191,7 +202,7 @@ void AAnubisUnrealCharacter::GiveDefaultAbilities()
 	//ASC give all abilities set in array of default abilities (set in blueprint editor)
 	for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
 	{
-		const FGameplayAbilitySpec AbilitySpec(AbilityClass,1);
+		const FGameplayAbilitySpec AbilitySpec(AbilityClass, 1);
 		AbilitySystemComponent->GiveAbility(AbilitySpec);
 	}
 }
@@ -209,13 +220,15 @@ void AAnubisUnrealCharacter::InitDefaultAttributes()
 	EffectContext.AddSourceObject(this);
 
 	//Create instance of DefaultAttributeEffect
-	const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1.f, EffectContext);
+	const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+		DefaultAttributeEffect, 1.f, EffectContext);
 
 	//If the instance (SpecHandle) is valid - set the default attributes (apply default effect)
 	if (SpecHandle.IsValid())
 	{
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		PlayerAttributeSet->bAttributesInitialized = true;
 	}
+
+	
 }
-
-

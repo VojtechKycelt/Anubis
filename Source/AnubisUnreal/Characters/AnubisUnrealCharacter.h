@@ -6,9 +6,9 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemComponent.h"
-#include "Abilities/PlayerAttributeSet.h"
 #include "AnubisUnrealCharacter.generated.h"
 
+class UPlayerAttributeSet;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;

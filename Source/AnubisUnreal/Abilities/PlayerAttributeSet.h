@@ -3,32 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemComponent.h"
-#include "AttributeSet.h"
+#include "AttributeSetBase.h"
 #include "PlayerAttributeSet.generated.h"
-
-#define ATTRIBUTE_ACCESSORS(ClassName, PropertyName) \
-GAMEPLAYATTRIBUTE_PROPERTY_GETTER(ClassName, PropertyName) \
-GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
-GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
-GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
-
-#define NUMERIC_VALUE(AttributeSetName, PropertyName) \
-AttributeSetName->Get##PropertyName##Attribute().GetNumericValue(AttributeSetName)
 
 /**
  * 
  */
 UCLASS()
-class ANUBISUNREAL_API UPlayerAttributeSet : public UAttributeSet
+class ANUBISUNREAL_API UPlayerAttributeSet : public UAttributeSetBase
 {
 	GENERATED_BODY()
 
 public:
 	UPlayerAttributeSet();
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Abilities | Gameplay Attribute")
-	FGameplayAttributeData Health;
-	ATTRIBUTE_ACCESSORS(UPlayerAttributeSet, Health);
+	FGameplayAttributeData Stamina;
+	ATTRIBUTE_ACCESSORS(UPlayerAttributeSet, Stamina);
 	
+	UPROPERTY(BlueprintReadOnly, Category = "Abilities | Gameplay Attribute")
+	FGameplayAttributeData MaxStamina;
+	ATTRIBUTE_ACCESSORS(UPlayerAttributeSet, MaxStamina);
+
 };
