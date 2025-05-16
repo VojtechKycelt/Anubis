@@ -4,6 +4,7 @@
 #include "EnemyCharacterBase.h"
 
 #include "AnubisUnreal/Macros.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -15,7 +16,7 @@ AEnemyCharacterBase::AEnemyCharacterBase()
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
 	AttributeSet = CreateDefaultSubobject<UEnemyAttributeSet>(TEXT("AttributeSet"));
-	
+
 }
 
 void AEnemyCharacterBase::GiveDefaultAbilities()
@@ -51,6 +52,8 @@ void AEnemyCharacterBase::BeginPlay()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	GiveDefaultAbilities();
 	InitDefaultAttributes();
+	PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+	AIController = Cast<AAIController>(GetController());
 }
 
 void AEnemyCharacterBase::Tick(float DeltaTime)

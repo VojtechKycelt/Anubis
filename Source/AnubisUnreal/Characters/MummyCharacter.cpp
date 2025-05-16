@@ -4,41 +4,76 @@
 #include "MummyCharacter.h"
 #include "AIController.h"
 #include "AnubisUnreal/Macros.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 
 AMummyCharacter::AMummyCharacter()
 {
-	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComponent"));
+	
 }
 
-void AMummyCharacter::OnSeePawn(APawn* Pawn)
+void AMummyCharacter::GetHit()
 {
-	//PRINT_SCREEN("SEE PAWN, %s", *GetNameSafe(Pawn));
-	ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-	AAIController* AIController = Cast<AAIController>(GetController());
-	if (PlayerCharacter && AIController)
+	if (AbilitySystemComponent)
 	{
-		AIController->MoveToActor(Pawn);
+		AbilitySystemComponent->CancelAllAbilities();
 	}
 }
-
 
 void AMummyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (PawnSensingComponent)
-	{
-		PawnSensingComponent->OnSeePawn.AddDynamic(this,&AMummyCharacter::OnSeePawn);
-	}
 }
 
 void AMummyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (!PlayerCharacter || !AIController) return;
+
+	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+	float DistanceFromPlayer = FVector::Dist(PlayerLocation, GetActorLocation());
+	FGameplayTagContainer OwnedTags = AbilitySystemComponent->GetOwnedGameplayTags();
+	bIsStaggered = OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.IsStaggered"));
+	
+	if (DistanceFromPlayer < fChaseRadius)
+	{
+		TargetPosition = PlayerLocation;
+	}
+	if (!bIsStaggered)
+	{
+		AIController->MoveToLocation(TargetPosition);
+	} else
+	{
+		AIController->StopMovement();
+	}
+	if (DistanceFromPlayer < fAttackRadius)
+	{
+		LightAttack();
+	}
+
 	//PRINT_SCREEN("%f", PawnSensingComponent->SightRadius);
-	SPHERE_TICK(GetActorLocation(), PawnSensingComponent->SightRadius);
+	SPHERE_TICK(GetActorLocation(), fChaseRadius);
+	SPHERE_TICK(GetActorLocation(), fAttackRadius);
 }
 
+void AMummyCharacter::ChasePlayerBehaviour(const FVector& PlayerLocation)
+{
+	//AIController->bAllowStrafe = true;
+	AIController->MoveToLocation(PlayerLocation);
+}
 
+void AMummyCharacter::LightAttack()
+{
+	if (!AbilitySystemComponent) return;
+	FGameplayTagContainer OwnedTags = AbilitySystemComponent->GetOwnedGameplayTags();
+	if (OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.isLightAttacking")) ||
+		OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.IsStaggered")))
+	{
+		return;
+	};
+
+	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
+}

@@ -4,27 +4,36 @@
 
 #include "CoreMinimal.h"
 #include "EnemyCharacterBase.h"
-#include "Perception/PawnSensingComponent.h"
 #include "MummyCharacter.generated.h"
-
-class UPawnSensingComponent;
 
 UCLASS()
 class ANUBISUNREAL_API AMummyCharacter : public AEnemyCharacterBase
 {
 	GENERATED_BODY()
 
+	
 public:
 	AMummyCharacter();
+
+	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
+	float fChaseRadius = 1000;
+
+	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
+	float fAttackRadius = 300;
+	
+	UFUNCTION(BlueprintCallable)
+	void GetHit();
 	
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnSeePawn(APawn* Pawn);
+	void ChasePlayerBehaviour(const FVector& PlayerLocation);
+	void LightAttack();
 	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category = "AI")
-	TObjectPtr<UPawnSensingComponent> PawnSensingComponent;
+	bool bPlayerInSightRange = false;
+	bool bPlayerInAttackRange = false;
+	bool bIsStaggered = false;
+	FVector TargetPosition;
 };
 

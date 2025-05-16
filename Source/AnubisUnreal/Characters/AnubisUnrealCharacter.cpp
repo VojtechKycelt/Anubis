@@ -19,6 +19,14 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 //////////////////////////////////////////////////////////////////////////
 // AAnubisUnrealCharacter
 
+void AAnubisUnrealCharacter::GetHit()
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->CancelAllAbilities();
+	}
+}
+
 AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 {
 	// Set size for collision capsule
@@ -127,7 +135,12 @@ void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
 	//Do not move if Kicking
 	FGameplayTag IsKickingTag = FGameplayTag::RequestGameplayTag("State.IsKicking");
-	if (AbilitySystemComponent && AbilitySystemComponent->HasMatchingGameplayTag(IsKickingTag)) return;
+	FGameplayTag IsStaggeredTag = FGameplayTag::RequestGameplayTag("State.IsStaggered");
+	
+	if (AbilitySystemComponent
+		&& AbilitySystemComponent->HasMatchingGameplayTag(IsKickingTag)
+		|| AbilitySystemComponent->HasMatchingGameplayTag(IsStaggeredTag)
+		) return;
 
 
 	// input is a Vector2D

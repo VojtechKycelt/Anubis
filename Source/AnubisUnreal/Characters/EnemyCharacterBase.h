@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "AIController.h"
 #include "AnubisUnreal/Abilities/EnemyAttributeSet.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacterBase.generated.h"
@@ -23,6 +24,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Abilities")
 	TObjectPtr<UEnemyAttributeSet> AttributeSet;
 
+	UPROPERTY()
+	TObjectPtr<ACharacter> PlayerCharacter;
+
+	UPROPERTY()
+	TObjectPtr<AAIController> AIController;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> DefaultAbilities;
 

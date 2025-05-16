@@ -55,6 +55,9 @@ class AAnubisUnrealCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
 
+	UFUNCTION(BlueprintCallable)
+	void GetHit();
+
 public:
 	AAnubisUnrealCharacter();
 	
