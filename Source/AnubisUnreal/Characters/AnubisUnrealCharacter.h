@@ -80,10 +80,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimMontage* DeathMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	UAnimSequence* DeathSequence;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAlive = true;
 	
 	void GiveDefaultAbilities();
 	void InitDefaultAttributes();
-	
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
@@ -96,11 +104,14 @@ protected:
 	
 	void Kick();
 	
+	void PerformDeath();
+	void RestartLevel();
+	void InitHUD() const;	
+
 	virtual void NotifyControllerChanged() override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 };
 
 

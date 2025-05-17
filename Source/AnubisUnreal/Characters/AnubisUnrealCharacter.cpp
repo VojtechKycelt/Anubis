@@ -12,6 +12,8 @@
 #include "InputActionValue.h"
 #include "AnubisUnreal/Macros.h"
 #include "AnubisUnreal/Abilities/PlayerAttributeSet.h"
+#include "AnubisUnreal/UI/AnubisHUD.h"
+#include "Kismet/GameplayStatics.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -129,10 +131,63 @@ inline void AAnubisUnrealCharacter::BeginPlay()
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
 	GiveDefaultAbilities();
 	InitDefaultAttributes();
+	InitHUD();
+}
+
+void AAnubisUnrealCharacter::PerformDeath()
+{
+	//maybe Ability called Death? that has gameplay cue with sound etc?
+	if (DeathMontage)
+	{
+		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+		GetMesh()->PlayAnimation(DeathSequence, false); // 'false' = don't loop
+		FTimerHandle MontageEndHandle;
+		GetWorldTimerManager().SetTimer(MontageEndHandle, this, &AAnubisUnrealCharacter::RestartLevel, 7, false);
+	}
+	else
+	{
+		// Fallback if animation missing
+		RestartLevel();
+	}
+}
+
+void AAnubisUnrealCharacter::RestartLevel()
+{
+	FString CurrentLevel = GetWorld()->GetMapName(); // Might return "UEDPIE_0_MapName"
+	FString ShortName = FPackageName::GetShortName(CurrentLevel); // Strips PIE prefix
+
+	UGameplayStatics::OpenLevel(this, FName(*ShortName));
+}
+
+void AAnubisUnrealCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (PlayerAttributeSet)
+	{
+		if (PlayerAttributeSet->GetHealth() <= 0 && bIsAlive)
+		{
+			bIsAlive = false;
+			PerformDeath();
+
+		}
+	}
+}
+
+void AAnubisUnrealCharacter::InitHUD() const
+{
+	if (const APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	{
+		if (AAnubisHUD* AnubisHUD = Cast<AAnubisHUD>(PlayerController->GetHUD()))
+		{
+			AnubisHUD->Init();
+		}
+	}
 }
 
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
+	if (!bIsAlive) return;
 	//Do not move if Kicking
 	FGameplayTag IsKickingTag = FGameplayTag::RequestGameplayTag("State.IsKicking");
 	FGameplayTag IsStaggeredTag = FGameplayTag::RequestGameplayTag("State.IsStaggered");

@@ -21,7 +21,11 @@ public class AnubisUnreal : ModuleRules
 			"GameplayTags",       
 			"GameplayTasks",
 			//AI
-			"AIModule"
+			"AIModule",
+			//UI,
+			"UMG",
 		});
+		
+		PublicIncludePaths.Add("AnubisUnreal");
 	}
 }
