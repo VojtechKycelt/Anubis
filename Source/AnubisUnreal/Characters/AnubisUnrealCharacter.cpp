@@ -140,7 +140,7 @@ void AAnubisUnrealCharacter::PerformDeath()
 	if (DeathMontage)
 	{
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-		GetMesh()->PlayAnimation(DeathSequence, false); // 'false' = don't loop
+		GetMesh()->PlayAnimation(DeathSequence, false);
 		FTimerHandle MontageEndHandle;
 		GetWorldTimerManager().SetTimer(MontageEndHandle, this, &AAnubisUnrealCharacter::RestartLevel, 7, false);
 	}
@@ -153,10 +153,13 @@ void AAnubisUnrealCharacter::PerformDeath()
 
 void AAnubisUnrealCharacter::RestartLevel()
 {
-	FString CurrentLevel = GetWorld()->GetMapName(); // Might return "UEDPIE_0_MapName"
-	FString ShortName = FPackageName::GetShortName(CurrentLevel); // Strips PIE prefix
+	UWorld* World = GetWorld();
+	if (!World) return;
 
-	UGameplayStatics::OpenLevel(this, FName(*ShortName));
+	FString MapPackageName = World->GetCurrentLevel()->GetOutermost()->GetName(); // e.g., "/Game/Maps/Start_Level"
+	UE_LOG(LogTemp, Warning, TEXT("Restarting level (full path): %s"), *MapPackageName);
+
+	UGameplayStatics::OpenLevel(this, FName(*MapPackageName));
 }
 
 void AAnubisUnrealCharacter::Tick(float DeltaSeconds)
