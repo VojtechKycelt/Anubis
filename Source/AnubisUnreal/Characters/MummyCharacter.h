@@ -28,8 +28,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 
-	void ChasePlayerBehaviour(const FVector& PlayerLocation);
 	void LightAttack();
+	bool CanSeePlayer();
 	
 	bool bPlayerInSightRange = false;
 	bool bPlayerInAttackRange = false;

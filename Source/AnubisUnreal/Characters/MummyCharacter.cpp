@@ -3,6 +3,7 @@
 
 #include "MummyCharacter.h"
 #include "AIController.h"
+#include "AnubisUnrealCharacter.h"
 #include "AnubisUnreal/Macros.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,7 +11,6 @@
 
 AMummyCharacter::AMummyCharacter()
 {
-	
 }
 
 void AMummyCharacter::GetHit()
@@ -36,32 +36,33 @@ void AMummyCharacter::Tick(float DeltaTime)
 	float DistanceFromPlayer = FVector::Dist(PlayerLocation, GetActorLocation());
 	FGameplayTagContainer OwnedTags = AbilitySystemComponent->GetOwnedGameplayTags();
 	bIsStaggered = OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.IsStaggered"));
-	
-	if (DistanceFromPlayer < fChaseRadius)
+
+	//Update players last seen position
+	if (CanSeePlayer() && DistanceFromPlayer < fChaseRadius)
 	{
 		TargetPosition = PlayerLocation;
 	}
+
+	//Move to last seen position if not staggered
 	if (!bIsStaggered)
 	{
 		AIController->MoveToLocation(TargetPosition);
-	} else
+	}
+	else
 	{
 		AIController->StopMovement();
 	}
+
+	
 	if (DistanceFromPlayer < fAttackRadius)
 	{
+		//Can smell the player if he is really close
+		TargetPosition = PlayerLocation;
 		LightAttack();
 	}
 
-	//PRINT_SCREEN("%f", PawnSensingComponent->SightRadius);
-	SPHERE_TICK(GetActorLocation(), fChaseRadius);
-	SPHERE_TICK(GetActorLocation(), fAttackRadius);
-}
-
-void AMummyCharacter::ChasePlayerBehaviour(const FVector& PlayerLocation)
-{
-	//AIController->bAllowStrafe = true;
-	AIController->MoveToLocation(PlayerLocation);
+	// SPHERE_TICK(GetActorLocation(), fChaseRadius);
+	// SPHERE_TICK(GetActorLocation(), fAttackRadius);
 }
 
 void AMummyCharacter::LightAttack()
@@ -76,4 +77,35 @@ void AMummyCharacter::LightAttack()
 
 	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
 	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
+}
+
+bool AMummyCharacter::CanSeePlayer()
+{
+	if (!PlayerCharacter) return false;
+
+	//Is player visible from mummy
+	FVector Start = GetActorLocation();
+	FVector End = PlayerCharacter->GetActorLocation();
+
+	FHitResult HitResult;
+	FCollisionQueryParams CollisionQueryParams;
+	CollisionQueryParams.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
+	bool bHitPlayer = bHit && HitResult.GetActor() == PlayerCharacter;
+
+	if (!bHitPlayer) return false;
+
+	//Is player in FOV of mummy
+	FVector Forward = GetActorForwardVector();
+	FVector ToPlayer = PlayerCharacter->GetActorLocation() - GetActorLocation();
+	ToPlayer.Normalize();
+	float Dot = FVector::DotProduct(Forward, ToPlayer);
+	float AngleDegrees = FMath::RadiansToDegrees(acosf(Dot));
+
+	bool bIsPlayerInFOV = AngleDegrees < 45.f;
+	
+	return bHitPlayer && bIsPlayerInFOV;
+	
 }
