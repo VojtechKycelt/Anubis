@@ -100,7 +100,8 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
 		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		//EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AAnubisUnrealCharacter::MyJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
@@ -143,6 +144,10 @@ void AAnubisUnrealCharacter::PerformDeath()
 	{
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 		GetMesh()->PlayAnimation(DeathSequence, false);
+		if (DeathClip != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(),DeathClip,GetActorLocation());
+		}
 		FTimerHandle MontageEndHandle;
 		GetWorldTimerManager().SetTimer(MontageEndHandle, this, &AAnubisUnrealCharacter::RestartLevel, 7, false);
 	}
@@ -267,6 +272,15 @@ void AAnubisUnrealCharacter::Kick()
 
 	FGameplayTag KickTag = FGameplayTag::RequestGameplayTag("Abilities.Kick");
 	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(KickTag));
+}
+
+void AAnubisUnrealCharacter::MyJump()
+{
+	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling()) return;
+
+	FGameplayTag JumpTag = FGameplayTag::RequestGameplayTag("Abilities.MyJump");
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(JumpTag));
+	
 }
 
 void AAnubisUnrealCharacter::GiveDefaultAbilities()

@@ -87,6 +87,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimSequence* DeathSequence;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DeathClip;
 	
 	
 	UPROPERTY(BlueprintReadOnly)
@@ -105,6 +108,8 @@ protected:
 	void LightAttack();
 	
 	void Kick();
+
+	void MyJump();
 	
 	void PerformDeath();
 	void RestartLevel();
