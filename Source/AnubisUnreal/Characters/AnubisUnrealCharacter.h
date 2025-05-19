@@ -54,6 +54,7 @@ class AAnubisUnrealCharacter : public ACharacter
 	/** Kick Input Action **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
+	
 
 	UFUNCTION(BlueprintCallable)
 	void GetHit();
@@ -86,7 +87,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimSequence* DeathSequence;
-
+	
+	
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsAlive = true;
 	

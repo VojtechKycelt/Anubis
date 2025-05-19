@@ -13,6 +13,7 @@
 #include "AnubisUnreal/Macros.h"
 #include "AnubisUnreal/Abilities/PlayerAttributeSet.h"
 #include "AnubisUnreal/UI/AnubisHUD.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -114,6 +115,7 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		                                   &AAnubisUnrealCharacter::LightAttack);
 		//** Kick
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Kick);
+		
 	}
 	else
 	{
@@ -187,6 +189,8 @@ void AAnubisUnrealCharacter::InitHUD() const
 		}
 	}
 }
+
+
 
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
