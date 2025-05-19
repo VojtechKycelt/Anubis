@@ -24,7 +24,7 @@ public class AnubisUnreal : ModuleRules
 			"AIModule",
 			//UI,
 			"UMG",
-			"UMGEditor"
+			//"UMGEditor"
 		});
 		
 		PublicIncludePaths.Add("AnubisUnreal");

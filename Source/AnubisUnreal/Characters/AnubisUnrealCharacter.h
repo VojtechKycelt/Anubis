@@ -54,6 +54,10 @@ class AAnubisUnrealCharacter : public ACharacter
 	/** Kick Input Action **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* KickAction;
+
+	/** Interact Input Action **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* InteractAction;
 	
 
 	UFUNCTION(BlueprintCallable)
@@ -90,7 +94,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	USoundBase* DeathClip;
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundBase* DoorLockClip;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bCanInteract = false;
 	
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsAlive = true;
@@ -111,6 +120,8 @@ protected:
 
 	void MyJump();
 	
+	void Interact();
+	void ExitLevel();
 	void PerformDeath();
 	void RestartLevel();
 	void InitHUD() const;	

@@ -61,8 +61,12 @@ void AMummyCharacter::Tick(float DeltaTime)
 		LightAttack();
 	}
 
-	// SPHERE_TICK(GetActorLocation(), fChaseRadius);
-	// SPHERE_TICK(GetActorLocation(), fAttackRadius);
+	if (bShowDebug)
+	{
+		SPHERE_TICK_COLOR(GetActorLocation(), fChaseRadius, FColor::Green);
+		SPHERE_TICK_COLOR(GetActorLocation(), fAttackRadius, FColor::Red);
+	}
+	
 }
 
 void AMummyCharacter::LightAttack()
@@ -95,7 +99,9 @@ bool AMummyCharacter::CanSeePlayer()
 		HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 	bool bHitPlayer = bHit && HitResult.GetActor() == PlayerCharacter;
 
-	if (!bHitPlayer) return false;
+	//if (!bHitPlayer) return false;
+
+	
 
 	//Is player in FOV of mummy
 	FVector Forward = GetActorForwardVector();
@@ -105,6 +111,19 @@ bool AMummyCharacter::CanSeePlayer()
 	float AngleDegrees = FMath::RadiansToDegrees(acosf(Dot));
 
 	bool bIsPlayerInFOV = AngleDegrees < 45.f;
+
+	if (bShowDebug)
+	{
+		if (bHitPlayer)
+		{
+			LINE_TICK_COLOR(Start,End,FColor::Red);
+
+		} else
+		{
+			LINE_TICK_COLOR(Start,End,FColor::Green);
+
+		}
+	}
 	
 	return bHitPlayer && bIsPlayerInFOV;
 	

@@ -20,6 +20,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
 	float fAttackRadius = 300;
+
+	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
+	bool bShowDebug = false;
 	
 	UFUNCTION(BlueprintCallable)
 	void GetHit();

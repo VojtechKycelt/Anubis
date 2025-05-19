@@ -41,3 +41,21 @@ void AAnubisHUD::PauseMenu()
 	}
 	
 }
+
+void AAnubisHUD::ShowHint(const FText& Text)
+{
+	if (!HintWidgetClass) return;
+
+	UHintWidget* Hint = CreateWidget<UHintWidget>(GetOwningPlayerController(), HintWidgetClass);
+	if (!Hint) return;
+
+	Hint->SetHintText(Text);  // Set the text
+	Hint->AddToViewport();
+
+	HintWidget = Hint; // Store it if you need to remove/hide it later
+}
+
+void AAnubisHUD::HideHint()
+{
+	HintWidget->RemoveFromParent();
+}

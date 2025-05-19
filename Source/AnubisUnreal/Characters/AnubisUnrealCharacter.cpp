@@ -116,6 +116,9 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		                                   &AAnubisUnrealCharacter::LightAttack);
 		//** Kick
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Kick);
+
+		//** Kick
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Interact);
 		
 	}
 	else
@@ -281,6 +284,25 @@ void AAnubisUnrealCharacter::MyJump()
 	FGameplayTag JumpTag = FGameplayTag::RequestGameplayTag("Abilities.MyJump");
 	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(JumpTag));
 	
+}
+
+void AAnubisUnrealCharacter::Interact()
+{
+	if (bCanInteract)
+	{
+		//TODO Interactable abstract class - object.Interact()
+		if (DoorLockClip != nullptr)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(),DoorLockClip,GetActorLocation());
+		}
+		FTimerHandle MontageEndHandle;
+		GetWorldTimerManager().SetTimer(MontageEndHandle, this, &AAnubisUnrealCharacter::ExitLevel, 2, false);
+	}
+}
+
+void AAnubisUnrealCharacter::ExitLevel()
+{
+	UGameplayStatics::OpenLevel(this, "MainMenu");
 }
 
 void AAnubisUnrealCharacter::GiveDefaultAbilities()
