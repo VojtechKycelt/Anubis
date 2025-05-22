@@ -11,6 +11,8 @@ ALevelEnd::ALevelEnd()
 
 void ALevelEnd::Interact()
 {
+	if (bAlreadyInteracted) return;
+	bAlreadyInteracted = true;
 	//TODO Add FadeOut from scene as HUD overlay alpha change and FadeIn on new scene begin play
 	PlayInteractSound();
 	FTimerHandle MontageEndHandle;

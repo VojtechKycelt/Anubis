@@ -198,6 +198,18 @@ void AAnubisUnrealCharacter::InitHUD() const
 }
 
 
+void AAnubisUnrealCharacter::ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect)
+{
+	if (!AbilitySystemComponent) return;
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+	EffectContext.AddSourceObject(this);
+	const FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(
+		GameplayEffect, 1.f, EffectContext);
+	if (SpecHandle.IsValid())
+	{
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+}
 
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {

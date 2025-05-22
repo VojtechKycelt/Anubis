@@ -17,7 +17,7 @@ AInteractable::AInteractable()
 	RootComponent = InteractionSphere;
 
 	InteractionSphere->InitSphereRadius(100.0f);
-	InteractionSphere->SetHiddenInGame(false);
+	InteractionSphere->SetHiddenInGame(true);
 	InteractionSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 
 	InteractionSphere->OnComponentBeginOverlap.AddDynamic(this, &AInteractable::OnOverlapBegin);

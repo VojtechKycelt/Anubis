@@ -29,6 +29,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="UI")
 	FText HintTextHud;
+
+	bool bAlreadyInteracted = false;
 	
 public:
 	AInteractable();

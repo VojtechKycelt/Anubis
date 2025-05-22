@@ -91,6 +91,8 @@ public:
 	AInteractable* GetInteractable() { return Interactable; }
 	void SetInteractable(AInteractable* NewInteractable) { Interactable = NewInteractable; }
 
+	void ApplyEffectToSelf(const TSubclassOf<UGameplayEffect>& GameplayEffect);
+	
 protected:
 	/** Functions binded to InputActions in SetupPlayerInputComponent **/
 	void Move(const FInputActionValue& Value);
