@@ -68,7 +68,7 @@ AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 	// Create Ability System Component
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
-	//Create PlayerAttribute Set
+	// Create PlayerAttribute Set
 	PlayerAttributeSet = CreateDefaultSubobject<UPlayerAttributeSet>(TEXT("PlayerAttributeSet"));
 
 
@@ -117,7 +117,7 @@ void AAnubisUnrealCharacter::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		//** Kick
 		EnhancedInputComponent->BindAction(KickAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Kick);
 
-		//** Kick
+		// Interact
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, this, &AAnubisUnrealCharacter::Interact);
 		
 	}
@@ -143,7 +143,7 @@ inline void AAnubisUnrealCharacter::BeginPlay()
 void AAnubisUnrealCharacter::PerformDeath()
 {
 	//maybe Ability called Death? that has gameplay cue with sound etc?
-	if (DeathMontage)
+	if (DeathSequence)
 	{
 		GetMesh()->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 		GetMesh()->PlayAnimation(DeathSequence, false);
@@ -203,17 +203,18 @@ void AAnubisUnrealCharacter::InitHUD() const
 void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
 	if (!bIsAlive) return;
-	//Do not move if Kicking
-	FGameplayTag IsKickingTag = FGameplayTag::RequestGameplayTag("State.IsKicking");
-	FGameplayTag IsStaggeredTag = FGameplayTag::RequestGameplayTag("State.IsStaggered");
+
+	//TODO do not check these tags
+	//create new tag - State.immovable, that will assign all abilities with which you cannot move
+	//and check only one tag - or create ability move? maybe
 	
+	//Do not move if Kicking
+	//could be pure function that takes ASC as argument and returns bool if can move (reusable for AI)
 	if (AbilitySystemComponent
-		&& AbilitySystemComponent->HasMatchingGameplayTag(IsKickingTag)
-		|| AbilitySystemComponent->HasMatchingGameplayTag(IsStaggeredTag)
+		&& AbilitySystemComponent->HasMatchingGameplayTag(StateIsKickingTag)
+		|| AbilitySystemComponent->HasMatchingGameplayTag(StateIsStaggeredTag)
 		) return;
 
-
-	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
@@ -236,12 +237,9 @@ void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 
 void AAnubisUnrealCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
@@ -249,45 +247,31 @@ void AAnubisUnrealCharacter::Look(const FInputActionValue& Value)
 
 void AAnubisUnrealCharacter::LightAttack()
 {
-	//UE_LOG(LogGameplayTags, Log, TEXT("Light Attack Function Called"));
-	//PRINT_SCREEN("Light Attack");
-	if (!AbilitySystemComponent) return;
+	if (!AbilitySystemComponent || !bIsAlive) return;
 
-	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
-	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
-
-	//** CAN BE ACTIVATED BY THIS IF WE DONT WANT TO USE TAGS
-	// for (TSubclassOf<UGameplayAbility> AbilityClass : DefaultAbilities)
-	// {
-	// 	FString AbilityName = AbilityClass->GetName();
-	// 	PRINT_SCREEN("%s", *AbilityName);
-	// 	if (AbilityName.Contains("GA_LIGHTATTACK"))
-	// 	{
-	// 		AbilitySystemComponent->TryActivateAbilityByClass(AbilityClass);
-	// 		break;
-	// 	}
-	// }
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(AbilityLightAttackTag));
 }
 
 void AAnubisUnrealCharacter::Kick()
 {
-	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling()) return;
+	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling() || !bIsAlive) return;
 
-	FGameplayTag KickTag = FGameplayTag::RequestGameplayTag("Abilities.Kick");
-	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(KickTag));
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(AbilityKickTag));
 }
 
 void AAnubisUnrealCharacter::MyJump()
 {
-	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling()) return;
+	if (!AbilitySystemComponent || GetCharacterMovement()->IsFalling() || !bIsAlive) return;
 
-	FGameplayTag JumpTag = FGameplayTag::RequestGameplayTag("Abilities.MyJump");
-	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(JumpTag));
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(AbilityMyJumpTag));
 	
 }
 
 void AAnubisUnrealCharacter::Interact()
 {
+	if (!bIsAlive) return;
+	
+	//TODO ABILITY INTERACT
 	if (bCanInteract)
 	{
 		//TODO Interactable abstract class - object.Interact()
@@ -307,7 +291,7 @@ void AAnubisUnrealCharacter::ExitLevel()
 
 void AAnubisUnrealCharacter::GiveDefaultAbilities()
 {
-	//Critical assertion - crash immediately of the ASC is nullptr
+	//Critical assertion - crash immediately if the ASC is nullptr
 	check(AbilitySystemComponent);
 
 	//ASC give all abilities set in array of default abilities (set in blueprint editor)

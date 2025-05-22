@@ -15,6 +15,18 @@ class ANUBISUNREAL_API AMummyCharacter : public AEnemyCharacterBase
 public:
 	AMummyCharacter();
 
+protected:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+
+	void LightAttack();
+	bool CanSeePlayer();
+	
+	bool bPlayerInSightRange = false;
+	bool bPlayerInAttackRange = false;
+	bool bIsStaggered = false;
+	
+	FVector TargetPosition;
 	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
 	float fChaseRadius = 1000;
 
@@ -26,17 +38,5 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void GetHit();
-	
-protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-
-	void LightAttack();
-	bool CanSeePlayer();
-	
-	bool bPlayerInSightRange = false;
-	bool bPlayerInAttackRange = false;
-	bool bIsStaggered = false;
-	FVector TargetPosition;
 };
 
