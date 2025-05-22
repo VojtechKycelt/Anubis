@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "AbilitySystemComponent.h"
+#include "Environment/Interactable.h"
 #include "AnubisUnrealCharacter.generated.h"
 
 class UPlayerAttributeSet;
@@ -58,6 +59,9 @@ class AAnubisUnrealCharacter : public ACharacter
 	UPROPERTY(BlueprintReadOnly, Category = "State", meta = (AllowPrivateAccess = "true"))
 	bool bIsAlive = true;
 
+	UPROPERTY()
+	TObjectPtr<AInteractable> Interactable = nullptr;
+
 public:
 	AAnubisUnrealCharacter();
 
@@ -81,18 +85,11 @@ public:
 	/** Gameplay Effect assigned in editor, sets the default values to our attributes at BeginPlay function **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Abilities")
 	TSubclassOf<UGameplayEffect> DefaultAttributeEffect;
-	
+
 	bool IsAlive() const { return bIsAlive; }
 
-
-	
-	//TODO MOVE THIS TO DOOR_LEVEL and play from there in interact() function
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	USoundBase* DoorLockClip;
-
-	//TODO instead of bool, assign Interactable object that we can call interact on
-	UPROPERTY(BlueprintReadWrite)
-	bool bCanInteract = false;
+	AInteractable* GetInteractable() { return Interactable; }
+	void SetInteractable(AInteractable* NewInteractable) { Interactable = NewInteractable; }
 
 protected:
 	/** Functions binded to InputActions in SetupPlayerInputComponent **/
@@ -102,18 +99,20 @@ protected:
 	void Kick();
 	void MyJump();
 	void Interact();
-	void ExitLevel();
+
+	/** Called when health == 0 **/
 	void PerformDeath();
 	void RestartLevel();
+
+	/** Initial functions called on BeginPlay **/
+	void GiveDefaultAbilities();
+	void InitDefaultAttributes();
 	void InitHUD() const;
 
 	virtual void NotifyControllerChanged() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-
-	void GiveDefaultAbilities();
-	void InitDefaultAttributes();
 
 	/** Gameplay Tags **/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Abilities")

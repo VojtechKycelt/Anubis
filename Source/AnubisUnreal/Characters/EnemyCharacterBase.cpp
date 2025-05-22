@@ -2,7 +2,6 @@
 
 
 #include "EnemyCharacterBase.h"
-
 #include "AnubisUnreal/Macros.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -10,13 +9,11 @@
 // Sets default values
 AEnemyCharacterBase::AEnemyCharacterBase()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
 	AttributeSet = CreateDefaultSubobject<UEnemyAttributeSet>(TEXT("AttributeSet"));
-
 }
 
 void AEnemyCharacterBase::GiveDefaultAbilities()

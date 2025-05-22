@@ -35,9 +35,9 @@ void AMummyCharacter::Tick(float DeltaTime)
 	FVector PlayerLocation = PlayerCharacter->GetActorLocation();
 	float DistanceFromPlayer = FVector::Dist(PlayerLocation, GetActorLocation());
 	FGameplayTagContainer OwnedTags = AbilitySystemComponent->GetOwnedGameplayTags();
-	bIsStaggered = OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.IsStaggered"));
+	bIsStaggered = OwnedTags.HasTag(StateIsStaggeredTag);
 
-	//Update players last seen position
+	//Update players last seen position if see player in distance
 	if (CanSeePlayer() && DistanceFromPlayer < fChaseRadius)
 	{
 		TargetPosition = PlayerLocation;
@@ -73,14 +73,13 @@ void AMummyCharacter::LightAttack()
 {
 	if (!AbilitySystemComponent) return;
 	FGameplayTagContainer OwnedTags = AbilitySystemComponent->GetOwnedGameplayTags();
-	if (OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.isLightAttacking")) ||
-		OwnedTags.HasTag(FGameplayTag::RequestGameplayTag("State.IsStaggered")))
+	if (OwnedTags.HasTag(StateIsLightAttackingTag) ||
+		OwnedTags.HasTag(StateIsStaggeredTag))
 	{
 		return;
 	};
 
-	FGameplayTag LightAttackTag = FGameplayTag::RequestGameplayTag("Abilities.LightAttack");
-	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(LightAttackTag));
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(AbilitiesLightAttackTag));
 }
 
 bool AMummyCharacter::CanSeePlayer()
@@ -98,9 +97,6 @@ bool AMummyCharacter::CanSeePlayer()
 	bool bHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult, Start, End, ECC_Visibility, CollisionQueryParams);
 	bool bHitPlayer = bHit && HitResult.GetActor() == PlayerCharacter;
-
-	//if (!bHitPlayer) return false;
-
 	
 
 	//Is player in FOV of mummy

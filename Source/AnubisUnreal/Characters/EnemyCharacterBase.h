@@ -46,4 +46,7 @@ protected:
 	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	
+	UPROPERTY(BlueprintReadWrite,EditAnywhere,Category="AI")
+	bool bShowDebug = false;
 };

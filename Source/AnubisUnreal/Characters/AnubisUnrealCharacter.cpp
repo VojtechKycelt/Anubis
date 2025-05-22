@@ -13,7 +13,6 @@
 #include "AnubisUnreal/Macros.h"
 #include "AnubisUnreal/Abilities/PlayerAttributeSet.h"
 #include "AnubisUnreal/UI/AnubisHUD.h"
-#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -21,14 +20,6 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // AAnubisUnrealCharacter
-
-void AAnubisUnrealCharacter::GetHit()
-{
-	if (AbilitySystemComponent)
-	{
-		AbilitySystemComponent->CancelAllAbilities();
-	}
-}
 
 AAnubisUnrealCharacter::AAnubisUnrealCharacter()
 {
@@ -140,6 +131,14 @@ inline void AAnubisUnrealCharacter::BeginPlay()
 	InitHUD();
 }
 
+void AAnubisUnrealCharacter::GetHit()
+{
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->CancelAllAbilities();
+	}
+}
+
 void AAnubisUnrealCharacter::PerformDeath()
 {
 	//maybe Ability called Death? that has gameplay cue with sound etc?
@@ -204,12 +203,11 @@ void AAnubisUnrealCharacter::Move(const FInputActionValue& Value)
 {
 	if (!bIsAlive) return;
 
-	//TODO do not check these tags
+	//maybe do not check all these tags
 	//create new tag - State.immovable, that will assign all abilities with which you cannot move
 	//and check only one tag - or create ability move? maybe
 	
 	//Do not move if Kicking
-	//could be pure function that takes ASC as argument and returns bool if can move (reusable for AI)
 	if (AbilitySystemComponent
 		&& AbilitySystemComponent->HasMatchingGameplayTag(StateIsKickingTag)
 		|| AbilitySystemComponent->HasMatchingGameplayTag(StateIsStaggeredTag)
@@ -272,22 +270,12 @@ void AAnubisUnrealCharacter::Interact()
 	if (!bIsAlive) return;
 	
 	//TODO ABILITY INTERACT
-	if (bCanInteract)
+	if (Interactable != nullptr)
 	{
-		//TODO Interactable abstract class - object.Interact()
-		if (DoorLockClip != nullptr)
-		{
-			UGameplayStatics::PlaySoundAtLocation(GetWorld(),DoorLockClip,GetActorLocation());
-		}
-		FTimerHandle MontageEndHandle;
-		GetWorldTimerManager().SetTimer(MontageEndHandle, this, &AAnubisUnrealCharacter::ExitLevel, 2, false);
+		Interactable->Interact();
 	}
 }
 
-void AAnubisUnrealCharacter::ExitLevel()
-{
-	UGameplayStatics::OpenLevel(this, "MainMenu");
-}
 
 void AAnubisUnrealCharacter::GiveDefaultAbilities()
 {
